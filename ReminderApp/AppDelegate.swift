@@ -7,17 +7,58 @@
 
 import UIKit
 import CoreData
-
+import UserNotifications
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate ,UNUserNotificationCenterDelegate{
 
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        UNUserNotificationCenter.current().requestAuthorization (options: [ .alert , .badge , .sound]){ granted, err in
+            if granted {
+                UNUserNotificationCenter.current().delegate = self
+//                DispatchQueue.main.async {
+//                    UIApplication.shared.registerForRemoteNotifications()
+//                }
+                print("Permission is granted")
+            }else {
+                print("Permission for push notification denied.")
+            }
+        }
         return true
     }
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let token = deviceToken.map{
+            String(format: "%02.2hhx", $0)
+        }.joined()
+        print("Device Token is \(token)")
+    }
+    func userNotificationCenter(_ center: UNUserNotificationCenter,didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        switch response.actionIdentifier {
+        case "snoozeAction":
+            // Handle snooze action
+            print("snoozeAction")
+            break
+        case "cancelAction":
+            // Handle cancel action
+            print("cancelAction")
+            break
+        default:
+            // Handle default action
+            break
+        }
 
+        completionHandler()
+    }
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Handle foreground presentation options
+        completionHandler([.alert, .sound, .badge ,.banner])
+    }
+    /*func userNotificationCenter(_ center:UNUserNotificationCenter,didReceive reponse:UNNotificationResponse,withCompletionHandler completionHandler: @escaping()-> Void){
+        completionHandler()
+    }*/
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
@@ -31,6 +72,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
         // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
+    
 
     // MARK: - Core Data stack
 
@@ -76,6 +118,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
-
 }
-
